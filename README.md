@@ -9,15 +9,15 @@ The robot operates as a self-driving vehicle that can navigate a track autonomou
 The project is based on the integration of sensors, artificial intelligence, and electronic control to simulate the behavior of a real autonomous car.
 
 Competition Category
-Category:We compute on the Future Engineers category
-Season: 
-Challenge: [BRIEFLY explain the challenge of this year]
+Category:We compete on the Future Engineers category
+Season: This robot is for de scholar year of 2025/2026
+Challenge:The objectives of this competion is to create from 0 a car that, using AI is to 
 Team Members
 Sergio Jimenez ;he had the role of builder where he was in charge of structure of the robot/vehicle
 Jesus Saez  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
 [NAME] – [ROLE if applicable]
 Coach
-Carlos Martinez is our technology teacher who is in charge of us during the competion
+Carlos Martinez is our technology teacher who is in charge of us during the competion and he can´t help us during the process of creation
 Objectives
 
 [WRITE HERE what you wanted to achieve]
