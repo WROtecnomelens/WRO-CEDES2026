@@ -13,30 +13,44 @@ Category:We compete on the Future Engineers category
 Season: This robot is for de scholar year of 2025/2026
 Challenge:The objectives of this competion is to create from 0 a car that, using AI is to 
 Team Members
-Sergio Jimenez ;he had the role of builder where he was in charge of structure of the robot/vehicle
-Jesus Saez  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
+Sergio J ;he had the role of builder where he was in charge of structure of the robot/vehicle
+Jesus S  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
 [NAME] – [ROLE if applicable]
 Coach
-Carlos Martinez is our technology teacher who is in charge of us during the competion and he can´t help us during the process of creation
+Carlos M is our technology teacher who is in charge of us during the competion and he can´t help us during the process of creation
 Objectives
 
-[WRITE HERE what you wanted to achieve]
+Our main objectives about this project is to learn about how create a car by our own using only our granted material,and develop useful skills that will help up on our future careers,and if its possibly to win
 
-Include:
+our robot is designed as a fully autonomous vehicle whose main goal is to navigate a track independently while reacting to its environment in real time. It must drive without human control, making decisions based on sensor input to ensure accurate and efficient movement throughout the course.
 
-Main goal of the robot
-Specific tasks it must complete
-Any special features
-Robot Design
-Hardware
+To achieve this, the robot completes several key tasks. It follows the path or lane using visual detection, identifies and avoids obstacles, measures distances to objects around it, and performs controlled turns and adjustments to stay on track. The robot must continuously process information and adapt its behavior, ensuring smooth navigation even when conditions change.
 
-[DESCRIBE YOUR ROBOT PHYSICALLY]
+A key feature of our design is the use of a HuskyLens camera, which enables the robot to recognize objects, lines, or markers using artificial vision. This allows more precise navigation compared to simple sensors. In addition, we use three ultrasonic sensors placed strategically (for example, front, left, and right) to measure distances and detect nearby obstacles. By combining the HuskyLens with ultrasonic sensing, the robot achieves better awareness of its surroundings through sensor fusion. This improves both accuracy and safety, as the robot can rely on vision for guidance and distance sensors for collision avoidance.
 
-Include:
 
-Controller (e.g., Arduino, LEGO, etc.)
-Sensors used
-Motors used
+
+
+
+Breadboard → to connect all the wires
+
+Arduino Uno
+
+HuskyLens → used to recognize the environment and make decisions using artificial intelligence
+
+4 wheels
+
+3 ultrasonic sensors → used to detect obstacles and measure distances
+
+2 DC motors → responsible for the vehicle’s traction
+
+DC motor driver →transforms the electrical signal into instruccions on the motor
+
+2 9V batteries
+
+2 servo motors → one used to control the direction of the vehicle and the other on the support of the huskylens
+
+
 Structure and materials
 Software
 
