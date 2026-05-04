@@ -8,10 +8,13 @@ The robot operates as a self-driving vehicle that can navigate a track autonomou
 
 The project is based on the integration of sensors, artificial intelligence, and electronic control to simulate the behavior of a real autonomous car.
 
-Competition Category
-Category:We compete on the Future Engineers category
-Season: This robot is for de scholar year of 2025/2026
-Challenge:The objectives of this competion is to create from 0 a car that, using AI is to 
+Category: We compete in the World Robot Olympiad Future Engineers category, which focuses on the development of fully autonomous vehicles capable of intelligent decision-making.
+
+Season: This robot has been developed for the 2025/2026 school year, following the official rules and technical requirements defined for this competition cycle.
+
+Challenge: The objective of this competition is to design and build from scratch an autonomous car that uses artificial intelligence and sensor integration to navigate a track independently. The robot must be capable of perceiving its environment, making real-time decisions, following paths or lanes, and avoiding obstacles without any human intervention. This challenge emphasizes innovation, engineering design, programming, and the effective combination of hardware and software systems to achieve reliable autonomous driving.
+
+
 Team Members
 Sergio J ;he had the role of builder where he was in charge of structure of the robot/vehicle
 Jesus S  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
