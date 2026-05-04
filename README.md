@@ -15,11 +15,16 @@ Season: This robot has been developed for the 2025/2026 school year, following t
 Challenge: The objective of this competition is to design and build from scratch an autonomous car that uses artificial intelligence and sensor integration to navigate a track independently. The robot must be capable of perceiving its environment, making real-time decisions, following paths or lanes, and avoiding obstacles without any human intervention. This challenge emphasizes innovation, engineering design, programming, and the effective combination of hardware and software systems to achieve reliable autonomous driving.
 
 
-Team Members
+Team Members:
+
 Sergio J ;he had the role of builder where he was in charge of structure of the robot/vehicle
+
 Jesus S  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
+
 [NAME] – [ROLE if applicable]
+
 Coach
+
 Carlos M is our technology teacher who is in charge of us during the competion and he can´t help us during the process of creation
 Objectives
 
@@ -29,29 +34,29 @@ our robot is designed as a fully autonomous vehicle whose main goal is to naviga
 
 To achieve this, the robot completes several key tasks. It follows the path or lane using visual detection, identifies and avoids obstacles, measures distances to objects around it, and performs controlled turns and adjustments to stay on track. The robot must continuously process information and adapt its behavior, ensuring smooth navigation even when conditions change.
 
-A key feature of our design is the use of a HuskyLens camera, which enables the robot to recognize objects, lines, or markers using artificial vision. This allows more precise navigation compared to simple sensors. In addition, we use three ultrasonic sensors placed strategically (for example, front, left, and right) to measure distances and detect nearby obstacles. By combining the HuskyLens with ultrasonic sensing, the robot achieves better awareness of its surroundings through sensor fusion. This improves both accuracy and safety, as the robot can rely on vision for guidance and distance sensors for collision avoidance.
+A key feature of our design is the use of a HuskyLens camera, which enables the robot to recognize objects, lines, or markers using artificial vision. This allows more precise navigation compared to simple sensors. In addition, we use three ultrasonic sensors placed strategically  to measure distances and detect nearby obstacles. By combining the HuskyLens with ultrasonic sensing, the robot achieves better awareness of its surroundings through sensor fusion. This improves both accuracy and safety, as the robot can rely on vision for guidance and distance sensors for collision avoidance.
 
 
 
 
 
-Breadboard → to connect all the wires
+Breadboard → Used to connect and organize all the wires without soldering, allowing easy testing and modifications of the circuit.
 
-Arduino Uno
+Arduino Uno → The main microcontroller board that processes all the inputs and outputs, controlling the entire system.
 
-HuskyLens → used to recognize the environment and make decisions using artificial intelligence
+HuskyLens → An artificial intelligence vision sensor used to recognize objects, lines, colors, or faces in the environment and make decisions based on what it detects.
 
-4 wheels
+4 wheels → Provide movement and stability to the vehicle, allowing it to travel smoothly across surfaces.
 
-3 ultrasonic sensors → used to detect obstacles and measure distances
+3 ultrasonic sensors → Used to detect obstacles and measure the distance between the vehicle and surrounding objects to avoid collisions.
 
-2 DC motors → responsible for the vehicle’s traction
+2 DC motors → Responsible for the traction and movement of the vehicle by rotating the wheels.
 
-DC motor driver →transforms the electrical signal into instruccions on the motor
+DC motor driver → Acts as an interface between the Arduino and the DC motors, converting electrical signals into instructions that control motor speed and direction.
 
-2 9V batteries
+2 9V batteries → Provide the necessary power supply for the electronic components and motors.One is connected directly to the arduino and the other to the motor driver
 
-2 servo motors → one used to control the direction of the vehicle and the other on the support of the huskylens
+2 servo motors → One is used to control the steering direction of the vehicle, while the other supports and adjusts the position of the HuskyLens for better vision and tracking.
 
 
 Structure and materials
@@ -66,15 +71,22 @@ Main logic (how it works)
 Important algorithms
 Building Instructions
 
-[EXPLAIN HOW TO BUILD YOUR ROBOT]
+The development of our autonomous vehicle was done in different stages so we could organize our work better and improve the robot step by step.
 
-Step-by-step:
+First, we read the official WRO Future Engineers rules and looked at previous projects to understand what our robot needed to do. We identified the main objectives: driving autonomously, detecting obstacles, making turns correctly, and reacting to different situations during the competition.
 
-[Step 1]
-[Step 2]
-[Step 3]
+For the mechanical design, we used Autodesk Fusion 360 to design the chassis, sensor supports, steering parts, and other pieces of the car. We wanted the vehicle to be resistant . After designing the parts, we used a 3D printer and a laser cutter to manufacture them and then assembled the chassis.
+
+At the same time, other team members worked on the electronics. Before connecting everything physically, we used Tinkercad to simulate the circuit and avoid mistakes.
+
+Our robot uses an Arduino Uno as the main controller, a HuskyLens camera to detect objects and help with navigation, ultrasonic sensors to measure distances, DC motors for movement, servo motors for steering, and batteries for power.
+
+We programmed the robot using Arduino IDE in C++. We didn’t make all the code at once. We improved it little by little as we added new components and tested new ideas.
 
 Add tips if something is difficult to assemble.
+
+
+
 
 Code Explanation
 
