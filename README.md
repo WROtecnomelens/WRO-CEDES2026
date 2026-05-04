@@ -37,7 +37,7 @@ To achieve this, the robot completes several key tasks. It follows the path or l
 A key feature of our design is the use of a HuskyLens camera, which enables the robot to recognize objects, lines, or markers using artificial vision. This allows more precise navigation compared to simple sensors. In addition, we use three ultrasonic sensors placed strategically  to measure distances and detect nearby obstacles. By combining the HuskyLens with ultrasonic sensing, the robot achieves better awareness of its surroundings through sensor fusion. This improves both accuracy and safety, as the robot can rely on vision for guidance and distance sensors for collision avoidance.
 
 
-
+Materials:
 
 
 Breadboard → Used to connect and organize all the wires without soldering, allowing easy testing and modifications of the circuit.
