@@ -1,0 +1,169 @@
+#include <Wire.h>
+#include <HUSKYLENS.h>
+#include <Servo.h>
+
+// -------------------- TB6612 --------------------
+#define PWMA 9
+#define AIN1 8
+#define AIN2 10
+
+#define PWMB 11
+#define BIN1 12
+#define BIN2 13
+
+#define STBY A2
+
+// -------------------- ENCODERS --------------------
+#define ENC_IZQ A3
+#define ENC_DER 3
+
+volatile int contIzq = 0;
+volatile int contDer = 0;
+
+// -------------------- ULTRASONIDOS --------------------
+#define TRIG_DER 2
+#define ECHO_DER 3
+#define TRIG_CEN 4
+#define ECHO_CEN 5
+#define TRIG_IZQ 6
+#define ECHO_IZQ 7
+
+// -------------------- SERVOS --------------------
+Servo servoCam;
+Servo servoDir;
+
+// -------------------- PID VELOCIDAD --------------------
+float Kp = 1, Ki = 0.5, Kd = 0.01;
+float Tm = 0.1;
+
+float eI=0,eI1=0,eI2=0,cvI=0,cvI1=0;
+float eD=0,eD1=0,eD2=0,cvD=0,cvD1=0;
+
+float velIzq = 0;
+float velDer = 0;
+float velDeseada = 0;
+
+// -------------------- PID DIRECCION --------------------
+float Kp_dir = 0.4;
+int anguloServo = 90;
+
+// -------------------- HUSKYLENS --------------------
+HUSKYLENS husky;
+
+// -------------------- TIEMPOS --------------------
+unsigned long tPID = 0;
+
+// -------------------- SETUP --------------------
+void setup() {
+
+  Serial.begin(9600);
+
+  // TB6612
+  pinMode(AIN1, OUTPUT); pinMode(AIN2, OUTPUT);
+  pinMode(BIN1, OUTPUT); pinMode(BIN2, OUTPUT);
+  pinMode(PWMA, OUTPUT); pinMode(PWMB, OUTPUT);
+  pinMode(STBY, OUTPUT);
+  digitalWrite(STBY, HIGH);
+
+  // Encoders
+  pinMode(ENC_IZQ, INPUT);
+  pinMode(ENC_DER, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(ENC_DER), isrDer, RISING);
+
+  // Servos
+  servoCam.attach(A0);
+  servoDir.attach(A1);
+
+  servoDir.write(90);
+  servoCam.write(90);
+
+  // I2C
+  Wire.begin();
+  husky.begin(Wire);
+}
+
+// -------------------- LOOP --------------------
+void loop() {
+
+  // -------- RPM --------
+  if (millis() - tPID >= 100) {
+
+    velIzq = 10 * contIzq * (60.0 / 748.0);
+    velDer = 10 * contDer * (60.0 / 748.0);
+
+    contIzq = 0;
+    contDer = 0;
+    tPID = millis();
+  }
+
+  // -------- HUSKYLENS --------
+  int xCentro = 160;
+
+  if (husky.request() && husky.available()) {
+    HUSKYLENSResult r = husky.read();
+    xCentro = r.xCenter;
+    velDeseada = 200;
+  } else {
+    velDeseada = 80;
+  }
+
+  // -------- PID DIRECCION --------
+  float errorDir = xCentro - 160;
+  float correccion = Kp_dir * errorDir;
+
+  anguloServo = 90 + correccion;
+  anguloServo = constrain(anguloServo, 60, 120);
+
+  servoDir.write(anguloServo);
+
+  // -------- PID IZQUIERDO --------
+  eI = velDeseada - velIzq;
+
+  cvI = cvI1 + (Kp + Kd/Tm)*eI 
+      + (-Kp + Ki*Tm - 2*Kd/Tm)*eI1 
+      + (Kd/Tm)*eI2;
+
+  cvI1 = cvI;
+  eI2 = eI1;
+  eI1 = eI;
+
+  // -------- PID DERECHO --------
+  eD = velDeseada - velDer;
+
+  cvD = cvD1 + (Kp + Kd/Tm)*eD 
+      + (-Kp + Ki*Tm - 2*Kd/Tm)*eD1 
+      + (Kd/Tm)*eD2;
+
+  cvD1 = cvD;
+  eD2 = eD1;
+  eD1 = eD;
+
+  cvI = constrain(cvI, 0, 255);
+  cvD = constrain(cvD, 0, 255);
+
+  // -------- MOTORES --------
+  moverMotores(cvI, cvD);
+
+  delay(50);
+}
+
+// -------------------- MOTORES --------------------
+void moverMotores(int velIzq, int velDer) {
+
+  digitalWrite(AIN1, HIGH);
+  digitalWrite(AIN2, LOW);
+  analogWrite(PWMA, velIzq);
+
+  digitalWrite(BIN1, HIGH);
+  digitalWrite(BIN2, LOW);
+  analogWrite(PWMB, velDer);
+}
+
+// -------------------- INTERRUPCIONES --------------------
+void isrDer() { contDer++; }
+
+// Encoder izquierdo por polling
+void leerEncoderIzq() {
+  if (digitalRead(ENC_IZQ)) contIzq++;
+}
