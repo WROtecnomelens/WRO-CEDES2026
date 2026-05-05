@@ -1,0 +1,23 @@
+Módulo de movimiento  
+
+El módulo de movimiento es el encargado del desplazamiento del robot. Está compuesto por dos motores DC (JGA25-371), cuatro ruedas y un driver de motores TB66FNG. El driver actúa como puente entre el Arduino y los motores, permitiendo controlar la velocidad y la dirección.  
+
+Módulo de dirección 
+
+El sistema de dirección está controlado por un servomotor (SM S2309S), que ajusta el ángulo de las ruedas delanteras. Esto permite realizar giros precisos y mejorar el control del robot durante la navegación en curvas y maniobras. 
+
+Módulo de visión 
+
+El módulo de visión está basado en el sensor de inteligencia artificial HuskyLens. Este sensor permite al robot reconocer objetos, colores y líneas en el entorno. El HuskyLens está montado sobre un servomotor posicional, lo que le permite girar y ajustar su posición para mejorar la detección y el seguimiento. 
+
+ Módulo de detección de obstáculos 
+
+Este módulo está formado por tres sensores ultrasónicos, los cuales permiten medir la distancia entre el robot y los objetos cercanos. Gracias a estos sensores, el robot puede detectar obstáculos en distintas direcciones y evitar colisiones durante su movimiento. 
+
+ Módulo de control 
+
+El módulo de control está basado en una placa Arduino R1, que actúa como el “cerebro” del robot. Esta placa procesa toda la información recibida de los sensores y controla los motores y servomotores. La placa de pruebas se utiliza para organizar las conexiones eléctricas sin necesidad de soldadura, facilitando pruebas y modificaciones. 
+
+Módulo de alimentación 
+
+El sistema de alimentación está compuesto por dos baterías de 9V. Una batería alimenta directamente el Arduino, mientras que la otra suministra energía al driver de motores. Esta separación permite una distribución más estable de la energía y evita interferencias entre el sistema de control y los motores. 
