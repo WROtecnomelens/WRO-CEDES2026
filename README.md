@@ -80,16 +80,3 @@ We programmed the robot using Arduino IDE in C++. We didn’t make all the code 
 
 
 
-
-
-
-[ADD YOUR FILES OR LINKS]
-
-Include:
-
-Photos of the robot
-Videos (YouTube or drive link)
-Repository Structure
-
-/cutting
-/printing
