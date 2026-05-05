@@ -21,7 +21,11 @@ Sergio J ;he had the role of builder where he was in charge of structure of the 
 
 Jesus S  –he had the role of electrician,his main function was to create the main circuit of the robot and know how to put on practise
 
-[NAME] – [ROLE if applicable]
+Jorge C -he had the role of programmeer ,he made the code
+
+Miguel M-he had the role of builder ,he assembled both motors
+
+Jaime L-he had the role of builder  where he was in charge of structure of the robot/vehicle
 
 Coach
 
@@ -58,24 +62,13 @@ DC motor driver → Acts as an interface between the Arduino and the DC motors, 
 
 2 servo motors → One is used to control the steering direction of the vehicle, while the other supports and adjusts the position of the HuskyLens for better vision and tracking.→sm s23009s and
 
-
-Structure and materials
-Software
-
-[DESCRIBE THE PROGRAMMING PART]
-
-Include:
-
-Programming language
-Main logic (how it works)
-Important algorithms
-Building Instructions
+Objectives
 
 The development of our autonomous vehicle was done in different stages so we could organize our work better and improve the robot step by step.
 
 First, we read the official WRO Future Engineers rules and looked at previous projects to understand what our robot needed to do. We identified the main objectives: driving autonomously, detecting obstacles, making turns correctly, and reacting to different situations during the competition.
 
-For the mechanical design, we used Autodesk Fusion 360 to design the chassis, sensor supports, steering parts, and other pieces of the car. We wanted the vehicle to be resistant . After designing the parts, we used a 3D printer and a laser cutter to manufacture them and then assembled the chassis.
+For the mechanical design, we used Autodesk Fusion 360 to design the chassis, sensor supports, steering parts, and other pieces of the car. We wanted the vehicle to be resistant . After designing the parts, we used a 3D printer and a laser cutter to manufacture them and then assembled the chassis.that was a hard task because we had to repeat the direction system twice
 
 At the same time, other team members worked on the electronics. Before connecting everything physically, we used Tinkercad to simulate the circuit and avoid mistakes.
 
@@ -83,39 +76,12 @@ Our robot uses an Arduino Uno as the main controller, a HuskyLens camera to dete
 
 We programmed the robot using Arduino IDE in C++. We didn’t make all the code at once. We improved it little by little as we added new components and tested new ideas.
 
-Add tips if something is difficult to assemble.
 
 
 
 
-Code Explanation
 
-[EXPLAIN YOUR CODE IN A SIMPLE WAY]
 
-Include:
-
-How the program starts
-Main functions
-How the robot makes decisions
-Testing & Results
-
-[EXPLAIN HOW YOU TESTED YOUR ROBOT]
-
-Include:
-
-What tests you did
-Problems during testing
-Final performance
-Challenges & Improvements
-
-[BE HONEST ABOUT PROBLEMS]
-
-Include:
-
-Biggest difficulties
-How you solved them
-What you would improve in the future
-Media
 
 [ADD YOUR FILES OR LINKS]
 
