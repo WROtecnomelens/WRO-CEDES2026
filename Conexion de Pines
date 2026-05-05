@@ -1,0 +1,49 @@
+Huskylens Y LCD
+Dispositivo	Pin módulo	Arduino
+Huskylens	-->SDA 	-->	A4
+Huskylens	-->	SCL 	-->	A5
+Huskylens	-->	VCC		-->5V
+Huskylens	-->	GND 	-->	GND
+Pantalla LCD 	--> SDA 	-->	A4
+Pantalla LCD		-->SCL	-->	A5
+Pantalla LCD	-->	VCC 	-->	5V
+Pantalla LCD	-->	GND	-->	GND
+
+
+ Sensores ultrasónicos
+Sensor	Trig	Echo	VCC	GND
+Derecho	D2	D3	5V	GND
+Medio	D4	D5	5V	GND
+Izquierdo	D6	D7	5V	GND
+
+Servos
+Servo	Pin Arduino
+Servo Huskylens	A0 5v GND
+Servo Dirección	A1 5v GND
+
+Driver TB6612FNG
+Función	Pin Arduino
+PWMA	-->9
+AIN1-->	8
+AIN2-->	10
+PWMB	-->11
+BIN1-->	12
+BIN2	-->13
+STBY	-->A2
+
+Motor izquierdo
+Pin motor	Conectar a
+Pin 1-->	A02 (TB6612)
+Pin 6	-->A01 (TB6612)
+Pin 2-->	GND
+Pin 5-->	5V
+Pin 3--> (Encoder A)	A3
+
+Motor derecho
+Pin motor	Conectar a
+Pin 1-->	B02 (TB6612)
+Pin 6-->	B01 (TB6612)
+Pin 2-->	GND
+Pin 5-->	5V
+Pin 3--> (Encoder A)	A2 
+
