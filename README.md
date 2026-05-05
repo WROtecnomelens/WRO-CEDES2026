@@ -90,3 +90,6 @@ Include:
 Photos of the robot
 Videos (YouTube or drive link)
 Repository Structure
+
+/cutting
+/printing
