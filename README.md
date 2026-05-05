@@ -37,12 +37,12 @@ To achieve this, the robot completes several key tasks. It follows the path or l
 A key feature of our design is the use of a HuskyLens camera, which enables the robot to recognize objects, lines, or markers using artificial vision. This allows more precise navigation compared to simple sensors. In addition, we use three ultrasonic sensors placed strategically  to measure distances and detect nearby obstacles. By combining the HuskyLens with ultrasonic sensing, the robot achieves better awareness of its surroundings through sensor fusion. This improves both accuracy and safety, as the robot can rely on vision for guidance and distance sensors for collision avoidance.
 
 
-Materials:
+Components:
 
 
 Breadboard → Used to connect and organize all the wires without soldering, allowing easy testing and modifications of the circuit.
 
-Arduino Uno → The main microcontroller board that processes all the inputs and outputs, controlling the entire system.
+Microcontroller → The main microcontroller board that processes all the inputs and outputs, controlling the entire system.→Arduino R1
 
 HuskyLens → An artificial intelligence vision sensor used to recognize objects, lines, colors, or faces in the environment and make decisions based on what it detects.
 
@@ -50,13 +50,13 @@ HuskyLens → An artificial intelligence vision sensor used to recognize objects
 
 3 ultrasonic sensors → Used to detect obstacles and measure the distance between the vehicle and surrounding objects to avoid collisions.
 
-2 DC motors → Responsible for the traction and movement of the vehicle by rotating the wheels.
+2 DC motors → Responsible for the traction and movement of the vehicle by rotating the wheels.→JGA25-371
 
-DC motor driver → Acts as an interface between the Arduino and the DC motors, converting electrical signals into instructions that control motor speed and direction.
+DC motor driver → Acts as an interface between the Arduino and the DC motors, converting electrical signals into instructions that control motor speed and direction.→TB66FNG
 
 2 9V batteries → Provide the necessary power supply for the electronic components and motors.One is connected directly to the arduino and the other to the motor driver
 
-2 servo motors → One is used to control the steering direction of the vehicle, while the other supports and adjusts the position of the HuskyLens for better vision and tracking.
+2 servo motors → One is used to control the steering direction of the vehicle, while the other supports and adjusts the position of the HuskyLens for better vision and tracking.→sm s23009s and
 
 
 Structure and materials
