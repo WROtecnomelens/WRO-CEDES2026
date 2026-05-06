@@ -77,6 +77,8 @@ Our robot uses an Arduino Uno as the main controller, a HuskyLens camera to dete
 We programmed the robot using Arduino IDE in C++. We didn’t make all the code at once. We improved it little by little as we added new components and tested new ideas.
 
 
+videolink:
+https://youtube.com/@wrotecnomelens?si=W7PGaDlYo8y0nQ2n
 
 
 
