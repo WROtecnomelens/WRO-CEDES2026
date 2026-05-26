@@ -1,0 +1,1009 @@
+// ===================================================== 
+
+// ==================== LIBRERIAS ====================== 
+
+// ===================================================== 
+
+ 
+
+#include <Wire.h> 
+
+#include <HUSKYLENS.h> 
+
+#include <Servo.h> 
+
+#include <LiquidCrystal_I2C.h> 
+
+ 
+
+// ===================================================== 
+
+// ==================== LCD I2C ======================== 
+
+// ===================================================== 
+
+ 
+
+// Pantalla LCD I2C 
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+
+ 
+
+// ===================================================== 
+
+// ==================== TB6612 ========================= 
+
+// ===================================================== 
+
+ 
+
+// Motor izquierdo 
+
+#define PWMA 9 
+
+#define AIN1 8 
+
+#define AIN2 10 
+
+ 
+
+// Motor derecho 
+
+#define PWMB 11 
+
+#define BIN1 12 
+
+#define BIN2 13 
+
+ 
+
+// ===================================================== 
+
+// ==================== ENCODERS ======================= 
+
+// ===================================================== 
+
+ 
+
+// Encoder izquierdo 
+
+#define ENC_IZQ A3 
+
+ 
+
+// Encoder derecho 
+
+#define ENC_DER A2 
+
+ 
+
+// Contadores encoder 
+
+volatile long contIzq = 0; 
+
+volatile long contDer = 0; 
+
+ 
+
+// Estados anteriores encoder 
+
+bool estadoAntIzq = LOW; 
+
+bool estadoAntDer = LOW; 
+
+ 
+
+// ===================================================== 
+
+// ==================== SERVOS ========================= 
+
+// ===================================================== 
+
+ 
+
+// Servo dirección 
+
+Servo servoDir; 
+
+ 
+
+// Servo cámara 
+
+Servo servoCam; 
+
+ 
+
+// ===================================================== 
+
+// ==================== HUSKYLENS ====================== 
+
+// ===================================================== 
+
+ 
+
+// Crear objeto HuskyLens 
+
+HUSKYLENS husky; 
+
+ 
+
+// ===================================================== 
+
+// ==================== PID VELOCIDAD ================== 
+
+// ===================================================== 
+
+ 
+
+// Constantes PID 
+
+float Kp = 1.2; 
+
+float Ki = 0.4; 
+
+float Kd = 0.02; 
+
+ 
+
+// Tiempo muestreo 
+
+float Tm = 0.05; 
+
+ 
+
+// PID izquierda 
+
+float eI  = 0; 
+
+float eI1 = 0; 
+
+float eI2 = 0; 
+
+ 
+
+float cvI  = 0; 
+
+float cvI1 = 0; 
+
+ 
+
+// PID derecha 
+
+float eD  = 0; 
+
+float eD1 = 0; 
+
+float eD2 = 0; 
+
+ 
+
+float cvD  = 0; 
+
+float cvD1 = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== VELOCIDAD ====================== 
+
+// ===================================================== 
+
+ 
+
+// Velocidad ruedas 
+
+float velIzq = 0; 
+
+float velDer = 0; 
+
+ 
+
+// Velocidad deseada 
+
+float velDeseada = 180; 
+
+ 
+
+// ===================================================== 
+
+// ==================== DIRECCION ====================== 
+
+// ===================================================== 
+
+ 
+
+// Servo dirección 
+
+int direccion = 90; 
+
+ 
+
+// PD dirección 
+
+float KpDir = 0.7; 
+
+float KdDir = 0.2; 
+
+ 
+
+// Error dirección 
+
+float errorDireccion = 0; 
+
+float errorPrev = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== ESTADOS ======================== 
+
+// ===================================================== 
+
+ 
+
+enum Estado { 
+
+ 
+
+  RECTA, 
+
+  GIRANDO 
+
+}; 
+
+ 
+
+// Estado inicial 
+
+Estado estado = RECTA; 
+
+ 
+
+// ===================================================== 
+
+// ==================== TIEMPOS ======================== 
+
+// ===================================================== 
+
+ 
+
+// PID 
+
+unsigned long tPID = 0; 
+
+ 
+
+// LCD 
+
+unsigned long tLCD = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== SETUP ========================== 
+
+// ===================================================== 
+
+ 
+
+void setup() { 
+
+ 
+
+  // Monitor serie 
+
+  Serial.begin(9600); 
+
+ 
+
+  // =================================================== 
+
+  // ================= MOTORES ========================= 
+
+  // =================================================== 
+
+ 
+
+  pinMode(AIN1, OUTPUT); 
+
+  pinMode(AIN2, OUTPUT); 
+
+ 
+
+  pinMode(BIN1, OUTPUT); 
+
+  pinMode(BIN2, OUTPUT); 
+
+ 
+
+  pinMode(PWMA, OUTPUT); 
+
+  pinMode(PWMB, OUTPUT); 
+
+ 
+
+  // =================================================== 
+
+  // ================= ENCODERS ======================== 
+
+  // =================================================== 
+
+ 
+
+  pinMode(ENC_IZQ, INPUT); 
+
+  pinMode(ENC_DER, INPUT); 
+
+ 
+
+  // =================================================== 
+
+  // ================= SERVOS ========================== 
+
+  // =================================================== 
+
+ 
+
+  // Servo dirección 
+
+  servoDir.attach(A1); 
+
+ 
+
+  // Servo cámara 
+
+  servoCam.attach(A0); 
+
+ 
+
+  // Dirección recta 
+
+  servoDir.write(90); 
+
+ 
+
+  // =================================================== 
+
+  // IMPORTANTE: 
+
+  // El servoCam NO se moverá en Open Challenge 
+
+  // Solo se coloca mirando al frente 
+
+  // =================================================== 
+
+ 
+
+  servoCam.write(110); 
+
+ 
+
+  // =================================================== 
+
+  // ================= I2C ============================= 
+
+  // =================================================== 
+
+ 
+
+  // Iniciar I2C 
+
+  Wire.begin(); 
+
+ 
+
+  // Iniciar HuskyLens 
+
+  husky.begin(Wire); 
+
+ 
+
+  // =================================================== 
+
+  // ================= LCD ============================= 
+
+  // =================================================== 
+
+ 
+
+  // Iniciar LCD 
+
+  lcd.init(); 
+
+ 
+
+  // Encender luz 
+
+  lcd.backlight(); 
+
+ 
+
+  // Mensaje inicio 
+
+  lcd.setCursor(0, 0); 
+
+  lcd.print("OPEN CHALLENGE"); 
+
+ 
+
+  lcd.setCursor(0, 1); 
+
+  lcd.print("PROG MELENAS"); 
+
+ 
+
+  delay(2000); 
+
+ 
+
+  // Limpiar pantalla 
+
+  lcd.clear(); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== LOOP =========================== 
+
+// ===================================================== 
+
+ 
+
+void loop() { 
+
+ 
+
+  // =================================================== 
+
+  // ================= ENCODERS ======================== 
+
+  // =================================================== 
+
+ 
+
+  leerEncoders(); 
+
+ 
+
+  // =================================================== 
+
+  // ================= VELOCIDAD ======================= 
+
+  // =================================================== 
+
+ 
+
+  if (millis() - tPID >= 50) { 
+
+ 
+
+    // Velocidad ruedas 
+
+    velIzq = contIzq * 20; 
+
+    velDer = contDer * 20; 
+
+ 
+
+    // Reiniciar contadores 
+
+    contIzq = 0; 
+
+    contDer = 0; 
+
+ 
+
+    // Reiniciar tiempo 
+
+    tPID = millis(); 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ================= HUSKYLENS ======================= 
+
+  // =================================================== 
+
+ 
+
+  if (husky.request() && husky.available()) { 
+
+ 
+
+    // Leer objeto 
+
+    HUSKYLENSResult r = husky.read(); 
+
+ 
+
+    // ================================================= 
+
+    // ID 1 -> NARANJA 
+
+    // Comenzar curva 
+
+    // ================================================= 
+
+ 
+
+    if (r.ID == 1 && estado == RECTA) { 
+
+ 
+
+      estado = GIRANDO; 
+
+    } 
+
+ 
+
+    // ================================================= 
+
+    // ID 2 -> AZUL 
+
+    // Salir curva 
+
+    // ================================================= 
+
+ 
+
+    if (r.ID == 2 && estado == GIRANDO) { 
+
+ 
+
+      estado = RECTA; 
+
+ 
+
+      errorPrev = 0; 
+
+    } 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ================= MAQUINA ESTADOS ================= 
+
+  // =================================================== 
+
+ 
+
+  switch (estado) { 
+
+ 
+
+    // ================================================= 
+
+    // ==================== RECTA ====================== 
+
+    // ================================================= 
+
+ 
+
+    case RECTA: { 
+
+ 
+
+      // Dirección recta 
+
+      direccion = 90; 
+
+ 
+
+      // Velocidad máxima 
+
+      velDeseada = 200; 
+
+ 
+
+      break; 
+
+    } 
+
+ 
+
+    // ================================================= 
+
+    // ==================== GIRANDO ==================== 
+
+    // ================================================= 
+
+ 
+
+    case GIRANDO: { 
+
+ 
+
+      // Error artificial giro 
+
+      errorDireccion = 30.0; 
+
+ 
+
+      // Derivada 
+
+      float deriv = errorDireccion - errorPrev; 
+
+ 
+
+      // PD dirección 
+
+      float correccion = 
+
+      KpDir * errorDireccion + 
+
+      KdDir * deriv; 
+
+ 
+
+      // Guardar error 
+
+      errorPrev = errorDireccion; 
+
+ 
+
+      // Calcular dirección 
+
+      direccion = 90 + (int)correccion; 
+
+ 
+
+      // Limitar servo 
+
+      direccion = constrain(direccion, 90, 130); 
+
+ 
+
+      // Reducir velocidad 
+
+      velDeseada = 120; 
+
+ 
+
+      break; 
+
+    } 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ================= DIRECCION ======================= 
+
+  // =================================================== 
+
+ 
+
+  servoDir.write(direccion); 
+
+ 
+
+  // =================================================== 
+
+  // ================= PID IZQUIERDO =================== 
+
+  // =================================================== 
+
+ 
+
+  eI = velDeseada - velIzq; 
+
+ 
+
+  cvI = 
+
+  cvI1 + 
+
+  (Kp + Kd/Tm) * eI + 
+
+  (-Kp + Ki*Tm - 2*Kd/Tm) * eI1 + 
+
+  (Kd/Tm) * eI2; 
+
+ 
+
+  cvI1 = cvI; 
+
+ 
+
+  eI2 = eI1; 
+
+  eI1 = eI; 
+
+ 
+
+  // =================================================== 
+
+  // ================= PID DERECHO ===================== 
+
+  // =================================================== 
+
+ 
+
+  eD = velDeseada - velDer; 
+
+ 
+
+  cvD = 
+
+  cvD1 + 
+
+  (Kp + Kd/Tm) * eD + 
+
+  (-Kp + Ki*Tm - 2*Kd/Tm) * eD1 + 
+
+  (Kd/Tm) * eD2; 
+
+ 
+
+  cvD1 = cvD; 
+
+ 
+
+  eD2 = eD1; 
+
+  eD1 = eD; 
+
+ 
+
+  // =================================================== 
+
+  // ================= LIMITAR PWM ===================== 
+
+  // =================================================== 
+
+ 
+
+  cvI = constrain(cvI, 80, 255); 
+
+  cvD = constrain(cvD, 80, 255); 
+
+ 
+
+  // =================================================== 
+
+  // ================= MOVER ROBOT ===================== 
+
+  // =================================================== 
+
+ 
+
+  moverMotores((int)cvI, (int)cvD); 
+
+ 
+
+  // =================================================== 
+
+  // ==================== LCD ========================== 
+
+  // =================================================== 
+
+ 
+
+  if (millis() - tLCD >= 200) { 
+
+ 
+
+    // Velocidad media 
+
+    float velMedia = (velIzq + velDer) / 2.0; 
+
+ 
+
+    // Línea 1 
+
+    lcd.setCursor(0,0); 
+
+    lcd.print("                "); 
+
+ 
+
+    lcd.setCursor(0,0); 
+
+ 
+
+    lcd.print("V:"); 
+
+    lcd.print(velMedia); 
+
+ 
+
+    lcd.print(" A:"); 
+
+    lcd.print(direccion); 
+
+ 
+
+    // Línea 2 
+
+    lcd.setCursor(0,1); 
+
+    lcd.print("                "); 
+
+ 
+
+    lcd.setCursor(0,1); 
+
+ 
+
+    lcd.print("Modo:"); 
+
+ 
+
+    if (estado == RECTA) { 
+
+ 
+
+      lcd.print("RECTA"); 
+
+    } 
+
+ 
+
+    if (estado == GIRANDO) { 
+
+ 
+
+      lcd.print("GIRO"); 
+
+    } 
+
+ 
+
+    // Reiniciar tiempo LCD 
+
+    tLCD = millis(); 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ==================== DEBUG ======================== 
+
+  // =================================================== 
+
+ 
+
+  Serial.print("VelI: "); 
+
+  Serial.print(velIzq); 
+
+ 
+
+  Serial.print(" VelD: "); 
+
+  Serial.print(velDer); 
+
+ 
+
+  Serial.print(" Dir: "); 
+
+  Serial.print(direccion); 
+
+ 
+
+  Serial.print(" Estado: "); 
+
+  Serial.println(estado); 
+
+ 
+
+  delay(10); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== MOTORES ======================== 
+
+// ===================================================== 
+
+ 
+
+void moverMotores(int velIzqPWM, int velDerPWM) { 
+
+ 
+
+  // Motor izquierdo adelante 
+
+  digitalWrite(AIN1, HIGH); 
+
+  digitalWrite(AIN2, LOW); 
+
+ 
+
+  analogWrite(PWMA, velIzqPWM); 
+
+ 
+
+  // Motor derecho adelante 
+
+  digitalWrite(BIN1, HIGH); 
+
+  digitalWrite(BIN2, LOW); 
+
+ 
+
+  analogWrite(PWMB, velDerPWM); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== ENCODERS ======================= 
+
+// ===================================================== 
+
+ 
+
+void leerEncoders() { 
+
+ 
+
+  // Leer encoder izquierdo 
+
+  bool lecturaIzq = digitalRead(ENC_IZQ); 
+
+ 
+
+  // Leer encoder derecho 
+
+  bool lecturaDer = digitalRead(ENC_DER); 
+
+ 
+
+  // Detectar flanco subida izquierda 
+
+  if (lecturaIzq == HIGH && estadoAntIzq == LOW) { 
+
+ 
+
+    contIzq++; 
+
+  } 
+
+ 
+
+  // Guardar estado 
+
+  estadoAntIzq = lecturaIzq; 
+
+ 
+
+  // Detectar flanco subida derecha 
+
+  if (lecturaDer == HIGH && estadoAntDer == LOW) { 
+
+ 
+
+    contDer++; 
+
+  } 
+
+ 
+
+  // Guardar estado 
+
+  estadoAntDer = lecturaDer; 
+
+} 
