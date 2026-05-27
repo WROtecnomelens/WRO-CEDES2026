@@ -1,169 +1,1144 @@
-#include <Wire.h>
-#include <HUSKYLENS.h>
-#include <Servo.h>
+// ===================================================== 
 
-// -------------------- TB6612 --------------------
-#define PWMA 9
-#define AIN1 8
-#define AIN2 10
+// ==================== LIBRERIAS ====================== 
 
-#define PWMB 11
-#define BIN1 12
-#define BIN2 13
+// ===================================================== 
 
-#define STBY A2
+ 
 
-// -------------------- ENCODERS --------------------
-#define ENC_IZQ A3
-#define ENC_DER 3
+#include <Wire.h>                  // Comunicación I2C 
 
-volatile int contIzq = 0;
-volatile int contDer = 0;
+#include <HUSKYLENS.h>             // HuskyLens 
 
-// -------------------- ULTRASONIDOS --------------------
-#define TRIG_DER 2
-#define ECHO_DER 3
-#define TRIG_CEN 4
-#define ECHO_CEN 5
-#define TRIG_IZQ 6
-#define ECHO_IZQ 7
+#include <Servo.h>                 // Servos 
 
-// -------------------- SERVOS --------------------
-Servo servoCam;
-Servo servoDir;
+#include <LiquidCrystal_I2C.h>     // LCD I2C 
 
-// -------------------- PID VELOCIDAD --------------------
-float Kp = 1, Ki = 0.5, Kd = 0.01;
-float Tm = 0.1;
+ 
 
-float eI=0,eI1=0,eI2=0,cvI=0,cvI1=0;
-float eD=0,eD1=0,eD2=0,cvD=0,cvD1=0;
+// ===================================================== 
 
-float velIzq = 0;
-float velDer = 0;
-float velDeseada = 0;
+// ==================== LCD I2C ======================== 
 
-// -------------------- PID DIRECCION --------------------
-float Kp_dir = 0.4;
-int anguloServo = 90;
+// ===================================================== 
 
-// -------------------- HUSKYLENS --------------------
-HUSKYLENS husky;
+ 
 
-// -------------------- TIEMPOS --------------------
-unsigned long tPID = 0;
+// Dirección LCD 0x27 
 
-// -------------------- SETUP --------------------
-void setup() {
+// Tamaño 16 columnas x 2 filas 
 
-  Serial.begin(9600);
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
 
-  // TB6612
-  pinMode(AIN1, OUTPUT); pinMode(AIN2, OUTPUT);
-  pinMode(BIN1, OUTPUT); pinMode(BIN2, OUTPUT);
-  pinMode(PWMA, OUTPUT); pinMode(PWMB, OUTPUT);
-  pinMode(STBY, OUTPUT);
-  digitalWrite(STBY, HIGH);
+ 
 
-  // Encoders
-  pinMode(ENC_IZQ, INPUT);
-  pinMode(ENC_DER, INPUT);
+// ===================================================== 
 
-  attachInterrupt(digitalPinToInterrupt(ENC_DER), isrDer, RISING);
+// ==================== TB6612 ========================= 
 
-  // Servos
-  servoCam.attach(A0);
-  servoDir.attach(A1);
+// ===================================================== 
 
-  servoDir.write(90);
-  servoCam.write(90);
+ 
 
-  // I2C
-  Wire.begin();
-  husky.begin(Wire);
-}
+// Motor izquierdo 
 
-// -------------------- LOOP --------------------
-void loop() {
+#define PWMA 9 
 
-  // -------- RPM --------
-  if (millis() - tPID >= 100) {
+#define AIN1 8 
 
-    velIzq = 10 * contIzq * (60.0 / 748.0);
-    velDer = 10 * contDer * (60.0 / 748.0);
+#define AIN2 10 
 
-    contIzq = 0;
-    contDer = 0;
-    tPID = millis();
-  }
+ 
 
-  // -------- HUSKYLENS --------
-  int xCentro = 160;
+// Motor derecho 
 
-  if (husky.request() && husky.available()) {
-    HUSKYLENSResult r = husky.read();
-    xCentro = r.xCenter;
-    velDeseada = 200;
-  } else {
-    velDeseada = 80;
-  }
+#define PWMB 11 
 
-  // -------- PID DIRECCION --------
-  float errorDir = xCentro - 160;
-  float correccion = Kp_dir * errorDir;
+#define BIN1 12 
 
-  anguloServo = 90 + correccion;
-  anguloServo = constrain(anguloServo, 60, 120);
+#define BIN2 13 
 
-  servoDir.write(anguloServo);
+ 
 
-  // -------- PID IZQUIERDO --------
-  eI = velDeseada - velIzq;
+// FIX: STBY conectado directamente a 5V en hardware 
 
-  cvI = cvI1 + (Kp + Kd/Tm)*eI 
-      + (-Kp + Ki*Tm - 2*Kd/Tm)*eI1 
-      + (Kd/Tm)*eI2;
+//      NO necesita pin de Arduino → eliminado 
 
-  cvI1 = cvI;
-  eI2 = eI1;
-  eI1 = eI;
+ 
 
-  // -------- PID DERECHO --------
-  eD = velDeseada - velDer;
+// ===================================================== 
 
-  cvD = cvD1 + (Kp + Kd/Tm)*eD 
-      + (-Kp + Ki*Tm - 2*Kd/Tm)*eD1 
-      + (Kd/Tm)*eD2;
+// ==================== ULTRASONIDOS =================== 
 
-  cvD1 = cvD;
-  eD2 = eD1;
-  eD1 = eD;
+// ===================================================== 
 
-  cvI = constrain(cvI, 0, 255);
-  cvD = constrain(cvD, 0, 255);
+ 
 
-  // -------- MOTORES --------
-  moverMotores(cvI, cvD);
+// FIX: Añadidos los 3 sensores HC-SR04 que faltaban 
 
-  delay(50);
-}
+ 
 
-// -------------------- MOTORES --------------------
-void moverMotores(int velIzq, int velDer) {
+// Sensor derecho 
 
-  digitalWrite(AIN1, HIGH);
-  digitalWrite(AIN2, LOW);
-  analogWrite(PWMA, velIzq);
+#define TRIG_DER 2 
 
-  digitalWrite(BIN1, HIGH);
-  digitalWrite(BIN2, LOW);
-  analogWrite(PWMB, velDer);
-}
+#define ECHO_DER 3 
 
-// -------------------- INTERRUPCIONES --------------------
-void isrDer() { contDer++; }
+ 
 
-// Encoder izquierdo por polling
-void leerEncoderIzq() {
-  if (digitalRead(ENC_IZQ)) contIzq++;
-}
+// Sensor del medio 
+
+#define TRIG_MED 4 
+
+#define ECHO_MED 5 
+
+ 
+
+// Sensor izquierdo 
+
+#define TRIG_IZQ 6 
+
+#define ECHO_IZQ 7 
+
+ 
+
+// Distancias medidas (cm) 
+
+float distDer = 999; 
+
+float distMed = 999; 
+
+float distIzq = 999; 
+
+ 
+
+// Distancia mínima para obstáculo (cm) 
+
+#define DIST_MIN 20 
+
+ 
+
+// ===================================================== 
+
+// ==================== ENCODERS ======================= 
+
+// ===================================================== 
+
+ 
+
+// Encoder rueda izquierda 
+
+#define ENC_IZQ A3 
+
+ 
+
+// Encoder rueda derecha 
+
+#define ENC_DER A2 
+
+ 
+
+// Variables contadores encoder 
+
+volatile long contIzq = 0; 
+
+volatile long contDer = 0; 
+
+ 
+
+// FIX: Estado anterior para detectar flanco de subida 
+
+//      Sin esto el bucle contaba múltiples veces el mismo pulso 
+
+bool estadoAntIzq = LOW; 
+
+bool estadoAntDer = LOW; 
+
+ 
+
+// ===================================================== 
+
+// ==================== SERVOS ========================= 
+
+// ===================================================== 
+
+ 
+
+// FIX: Pines corregidos 
+
+//      Original: pins 5 y 6 → conflicto con pines ultrasonidos 
+
+//      Correcto según conexión: A1 (dirección) y A0 (cámara) 
+
+ 
+
+Servo servoDir;   // Servo dirección  → A1 
+
+Servo servoCam;   // Servo HuskyLens  → A0 
+
+ 
+
+// ===================================================== 
+
+// ==================== HUSKYLENS ====================== 
+
+// ===================================================== 
+
+ 
+
+// Crear objeto HuskyLens 
+
+HUSKYLENS husky; 
+
+ 
+
+// ===================================================== 
+
+// ==================== PID VELOCIDAD ================== 
+
+// ===================================================== 
+
+ 
+
+// Constantes PID 
+
+float Kp = 1.2; 
+
+float Ki = 0.4; 
+
+float Kd = 0.02; 
+
+ 
+
+// Tiempo muestreo 
+
+float Tm = 0.05; 
+
+ 
+
+// PID izquierda 
+
+float eI  = 0; 
+
+float eI1 = 0; 
+
+float eI2 = 0; 
+
+ 
+
+float cvI  = 0; 
+
+float cvI1 = 0; 
+
+ 
+
+// PID derecha 
+
+float eD  = 0; 
+
+float eD1 = 0; 
+
+float eD2 = 0; 
+
+ 
+
+float cvD  = 0; 
+
+float cvD1 = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== VELOCIDAD ====================== 
+
+// ===================================================== 
+
+ 
+
+// Velocidades reales (pulsos/s) 
+
+float velIzq = 0; 
+
+float velDer = 0; 
+
+ 
+
+// Velocidad deseada 
+
+float velDeseada = 180; 
+
+ 
+
+// ===================================================== 
+
+// ==================== DIRECCION ====================== 
+
+// ===================================================== 
+
+ 
+
+// Ángulo servo dirección (90 = recto) 
+
+int direccion = 90; 
+
+ 
+
+// Constantes PD dirección 
+
+float KpDir = 0.7; 
+
+float KdDir = 0.2; 
+
+ 
+
+// Error dirección y error anterior 
+
+float errorDireccion = 0; 
+
+float errorPrev      = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== ESTADOS ======================== 
+
+// ===================================================== 
+
+ 
+
+enum Estado { 
+
+  RECTA, 
+
+  GIRANDO 
+
+}; 
+
+ 
+
+// Estado inicial 
+
+Estado estado = RECTA; 
+
+ 
+
+// ===================================================== 
+
+// ==================== TIEMPOS ======================== 
+
+// ===================================================== 
+
+ 
+
+// Tiempo PID 
+
+unsigned long tPID = 0; 
+
+ 
+
+// Tiempo LCD 
+
+unsigned long tLCD = 0; 
+
+ 
+
+// Tiempo ultrasonidos 
+
+unsigned long tUS = 0; 
+
+ 
+
+// ===================================================== 
+
+// ==================== SETUP ========================== 
+
+// ===================================================== 
+
+ 
+
+void setup() { 
+
+ 
+
+  // Serial monitor 
+
+  Serial.begin(9600); 
+
+ 
+
+  // ================= MOTORES ================= 
+
+ 
+
+  pinMode(AIN1, OUTPUT); 
+
+  pinMode(AIN2, OUTPUT); 
+
+ 
+
+  pinMode(BIN1, OUTPUT); 
+
+  pinMode(BIN2, OUTPUT); 
+
+ 
+
+  pinMode(PWMA, OUTPUT); 
+
+  pinMode(PWMB, OUTPUT); 
+
+ 
+
+  // FIX: STBY eliminado → va a 5V directo en hardware 
+
+ 
+
+  // ================= ULTRASONIDOS ================= 
+
+ 
+
+  // FIX: Configuración de pines ultrasonidos añadida 
+
+  pinMode(TRIG_DER, OUTPUT); 
+
+  pinMode(ECHO_DER, INPUT); 
+
+ 
+
+  pinMode(TRIG_MED, OUTPUT); 
+
+  pinMode(ECHO_MED, INPUT); 
+
+ 
+
+  pinMode(TRIG_IZQ, OUTPUT); 
+
+  pinMode(ECHO_IZQ, INPUT); 
+
+ 
+
+  // ================= ENCODERS ================= 
+
+ 
+
+  pinMode(ENC_IZQ, INPUT); 
+
+  pinMode(ENC_DER, INPUT); 
+
+ 
+
+  // ================= SERVOS ================= 
+
+ 
+
+  // FIX: Pines corregidos según conexión real 
+
+  servoDir.attach(A1);   // Servo dirección → A1 
+
+  servoCam.attach(A0);   // Servo HuskyLens → A0 
+
+ 
+
+  // Centrar dirección 
+
+  servoDir.write(0); 
+
+ 
+
+  // Cámara girada 90° a la derecha al inicio 
+
+  servoCam.write(0);     // FIX: Era 90 (centro) → ahora 0 (90° derecha) 
+
+ 
+
+  // ================= I2C ================= 
+
+ 
+
+  // Iniciar I2C 
+
+  Wire.begin(); 
+
+ 
+
+  // Iniciar HuskyLens 
+
+  husky.begin(Wire); 
+
+ 
+
+  // ================= LCD ================= 
+
+ 
+
+  // Iniciar pantalla 
+
+  lcd.init(); 
+
+ 
+
+  // Encender luz 
+
+  lcd.backlight(); 
+
+ 
+
+  // Mensaje inicial 
+
+  lcd.setCursor(0, 0); 
+
+  lcd.print("INICIANDO"); 
+
+ 
+
+  lcd.setCursor(0, 1); 
+
+  lcd.print("PROG. MELENAS"); 
+
+ 
+
+  delay(2000); 
+
+ 
+
+  // Limpiar pantalla 
+
+  lcd.clear(); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== LOOP =========================== 
+
+// ===================================================== 
+
+ 
+
+void loop() { 
+
+ 
+
+  // =================================================== 
+
+  // ================= ENCODERS ======================== 
+
+  // =================================================== 
+
+ 
+
+  leerEncoders(); 
+
+ 
+
+  // =================================================== 
+
+  // =========== CALCULO VELOCIDAD ===================== 
+
+  // =================================================== 
+
+ 
+
+  if (millis() - tPID >= 50) { 
+
+ 
+
+    // Calcular velocidad ruedas (pulsos/s) 
+
+    velIzq = contIzq * 20; 
+
+    velDer = contDer * 20; 
+
+ 
+
+    // Reiniciar contadores 
+
+    contIzq = 0; 
+
+    contDer = 0; 
+
+ 
+
+    // Reiniciar tiempo 
+
+    tPID = millis(); 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ============ ULTRASONIDOS ========================= 
+
+  // =================================================== 
+
+ 
+
+  // FIX: Lectura periódica de los 3 ultrasonidos 
+
+  //      Se mide cada 50ms para no bloquear el bucle 
+
+  if (millis() - tUS >= 50) { 
+
+ 
+
+    distDer = medirDistancia(TRIG_DER, ECHO_DER); 
+
+    distMed = medirDistancia(TRIG_MED, ECHO_MED); 
+
+    distIzq = medirDistancia(TRIG_IZQ, ECHO_IZQ); 
+
+ 
+
+    tUS = millis(); 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ============ DETECCION HUSKYLENS ================== 
+
+  // =================================================== 
+
+ 
+
+  if (husky.request() && husky.available()) { 
+
+ 
+
+    // Leer objeto detectado 
+
+    HUSKYLENSResult r = husky.read(); 
+
+ 
+
+    // ID 1 = línea naranja → empezar giro 
+
+    if (r.ID == 1 && estado == RECTA) { 
+
+      estado = GIRANDO; 
+
+    } 
+
+ 
+
+    // ID 2 = línea azul → volver a recta 
+
+    if (r.ID == 2 && estado == GIRANDO) { 
+
+      estado = RECTA; 
+
+      errorPrev = 0; 
+
+    } 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ============ MAQUINA DE ESTADOS =================== 
+
+  // =================================================== 
+
+ 
+
+  switch (estado) { 
+
+ 
+
+    // ================= RECTA ================= 
+
+ 
+
+    case RECTA: { 
+
+ 
+
+      // Dirección recta 
+
+      direccion = 90; 
+
+ 
+
+      // Cámara al frente 
+
+      servoCam.write(110); 
+
+ 
+
+      // Velocidad máxima 
+
+      velDeseada = 200; 
+
+ 
+
+      // Reducir velocidad si hay obstáculo al frente 
+
+      if (distMed > 0 && distMed < DIST_MIN) { 
+
+        velDeseada = 0; 
+
+      } 
+
+ 
+
+      break; 
+
+    } 
+
+ 
+
+    // ================= GIRANDO ================= 
+
+ 
+
+    // FIX: Añadidas llaves {} al case para permitir declarar 
+
+    //      variables locales sin error de compilación en C++ 
+
+    // FIX: errorDireccion = 90 era un valor fijo sin sentido 
+
+    //      como error; se usa 30 como desviación de giro real 
+
+ 
+
+    case GIRANDO: { 
+
+ 
+
+      // Desviación de giro deseada (30 grados) 
+
+      errorDireccion = 30.0; 
+
+ 
+
+      // Derivada del error 
+
+      float deriv = errorDireccion - errorPrev; 
+
+ 
+
+      // PD dirección 
+
+      float correccion = 
+
+        KpDir * errorDireccion + 
+
+        KdDir * deriv; 
+
+ 
+
+      // Guardar error anterior 
+
+      errorPrev = errorDireccion; 
+
+ 
+
+      // Calcular ángulo servo 
+
+      direccion = 90 + (int)correccion; 
+
+ 
+
+      // Limitar rango servo 
+
+      direccion = constrain(direccion, 90, 130); 
+
+ 
+
+      // Girar cámara 
+
+      servoCam.write(0); 
+
+ 
+
+      // Reducir velocidad en curva 
+
+      velDeseada = 120; 
+
+ 
+
+      break; 
+
+    } 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ============= MOVER DIRECCION ===================== 
+
+  // =================================================== 
+
+ 
+
+  servoDir.write(direccion); 
+
+ 
+
+  // =================================================== 
+
+  // ================= PID IZQUIERDO =================== 
+
+  // =================================================== 
+
+ 
+
+  eI = velDeseada - velIzq; 
+
+ 
+
+  cvI = 
+
+    cvI1 + 
+
+    (Kp + Kd / Tm)           * eI  + 
+
+    (-Kp + Ki * Tm - 2*Kd/Tm) * eI1 + 
+
+    (Kd / Tm)                 * eI2; 
+
+ 
+
+  cvI1 = cvI; 
+
+  eI2  = eI1; 
+
+  eI1  = eI; 
+
+ 
+
+  // =================================================== 
+
+  // ================= PID DERECHO ===================== 
+
+  // =================================================== 
+
+ 
+
+  eD = velDeseada - velDer; 
+
+ 
+
+  cvD = 
+
+    cvD1 + 
+
+    (Kp + Kd / Tm)           * eD  + 
+
+    (-Kp + Ki * Tm - 2*Kd/Tm) * eD1 + 
+
+    (Kd / Tm)                 * eD2; 
+
+ 
+
+  cvD1 = cvD; 
+
+  eD2  = eD1; 
+
+  eD1  = eD; 
+
+ 
+
+  // =================================================== 
+
+  // ============== LIMITAR PWM ======================== 
+
+  // =================================================== 
+
+ 
+
+  cvI = constrain(cvI, 80, 255); 
+
+  cvD = constrain(cvD, 80, 255); 
+
+ 
+
+  // =================================================== 
+
+  // ================= MOVER ROBOT ===================== 
+
+  // =================================================== 
+
+ 
+
+  moverMotores((int)cvI, (int)cvD); 
+
+ 
+
+  // =================================================== 
+
+  // ==================== LCD ========================== 
+
+  // =================================================== 
+
+ 
+
+  // Actualizar LCD cada 200 ms para evitar parpadeos 
+
+  if (millis() - tLCD >= 200) { 
+
+ 
+
+    // Velocidad media 
+
+    float velMedia = (velIzq + velDer) / 2.0; 
+
+ 
+
+    // ---------- LINEA 1 ---------- 
+
+ 
+
+    lcd.setCursor(0, 0); 
+
+    lcd.print("                "); 
+
+    lcd.setCursor(0, 0); 
+
+    lcd.print("V:"); 
+
+    lcd.print(velMedia); 
+
+    lcd.print(" A:"); 
+
+    lcd.print(direccion); 
+
+ 
+
+    // ---------- LINEA 2 ---------- 
+
+ 
+
+    lcd.setCursor(0, 1); 
+
+    lcd.print("                "); 
+
+    lcd.setCursor(0, 1); 
+
+    lcd.print("Modo:"); 
+
+ 
+
+    if (estado == RECTA)   lcd.print("RECTA"); 
+
+    if (estado == GIRANDO) lcd.print("GIRO"); 
+
+ 
+
+    // ---------- LINEA 2 ultrasonidos ---------- 
+
+ 
+
+    // Reiniciar tiempo LCD 
+
+    tLCD = millis(); 
+
+  } 
+
+ 
+
+  // =================================================== 
+
+  // ==================== DEBUG ======================== 
+
+  // =================================================== 
+
+ 
+
+  Serial.print("VelI: ");    Serial.print(velIzq); 
+
+  Serial.print(" VelD: ");   Serial.print(velDer); 
+
+  Serial.print(" Dir: ");    Serial.print(direccion); 
+
+  Serial.print(" US_M: ");   Serial.print(distMed); 
+
+  Serial.print(" Estado: "); Serial.println(estado); 
+
+ 
+
+  // Delay estabilidad 
+
+  delay(10); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== MOTORES ======================== 
+
+// ===================================================== 
+
+ 
+
+void moverMotores(int velIzqPWM, int velDerPWM) { 
+
+ 
+
+  // Motor izquierdo adelante 
+
+  digitalWrite(AIN1, HIGH); 
+
+  digitalWrite(AIN2, LOW); 
+
+  analogWrite(PWMA, velIzqPWM); 
+
+ 
+
+  // Motor derecho adelante 
+
+  digitalWrite(BIN1, HIGH); 
+
+  digitalWrite(BIN2, LOW); 
+
+  analogWrite(PWMB, velDerPWM); 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== ENCODERS ======================= 
+
+// ===================================================== 
+
+ 
+
+void leerEncoders() { 
+
+ 
+
+  // FIX: Detección de flanco de subida 
+
+  //      Original: contaba el pulso múltiples veces por iteración 
+
+  //      Correcto: solo incrementa al pasar de LOW a HIGH 
+
+ 
+
+  bool lecturaIzq = digitalRead(ENC_IZQ); 
+
+  bool lecturaDer = digitalRead(ENC_DER); 
+
+ 
+
+  if (lecturaIzq == HIGH && estadoAntIzq == LOW) { 
+
+    contIzq++; 
+
+  } 
+
+  estadoAntIzq = lecturaIzq; 
+
+ 
+
+  if (lecturaDer == HIGH && estadoAntDer == LOW) { 
+
+    contDer++; 
+
+  } 
+
+  estadoAntDer = lecturaDer; 
+
+} 
+
+ 
+
+// ===================================================== 
+
+// ==================== ULTRASONIDOS =================== 
+
+// ===================================================== 
+
+ 
+
+// FIX: Función nueva para medir distancia HC-SR04 
+
+//      Devuelve distancia en cm (0 si no hay eco válido) 
+
+ 
+
+float medirDistancia(int pinTrig, int pinEcho) { 
+
+ 
+
+  // Pulso de disparo 
+
+  digitalWrite(pinTrig, LOW); 
+
+  delayMicroseconds(2); 
+
+  digitalWrite(pinTrig, HIGH); 
+
+  delayMicroseconds(10); 
+
+  digitalWrite(pinTrig, LOW); 
+
+ 
+
+  // Medir duración del eco (timeout 30ms) 
+
+  long duracion = pulseIn(pinEcho, HIGH, 30000); 
+
+ 
+
+  // Calcular distancia en cm 
+
+  if (duracion == 0) return 999;   // Sin eco → objeto muy lejos 
+
+ 
+
+  return duracion * 0.034 / 2.0; 
+
+} 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
