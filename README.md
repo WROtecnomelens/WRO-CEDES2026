@@ -23,7 +23,7 @@ Jesus S  –he had the role of electrician,his main function was to create the m
 
 Jorge C -he had the role of programmeer ,he made the code
 
-Miguel M-he had the role of builder ,he assembled both motors
+Miguel M-he had the role of builder ,he assembled both motors,also acted as burocrat
 
 Jaime L-he had the role of builder  where he was in charge of structure of the robot/vehicle
 
